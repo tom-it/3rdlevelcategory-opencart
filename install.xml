@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+	<name>CategoriesMenu3rdLevel</name>
+	<code>CategoriesMenu3rdLevel0001</code>
+    <id>CategoriesMenu3rdLevel</id>
+    <version>1.0.1</version>
+    <author>Thomas Lang</author>
+<!-- php file -->
+    <file path="catalog/controller/extension/module/category.php">
+        <operation>
+            <search><![CDATA[$this->load->model('catalog/category');]]></search>
+            <add position="before"><![CDATA[
+
+// CategoriesMenu3rdLevel>>>
+		if (isset($parts[2])) {
+			$data['child_lv3_id'] = $parts[2];
+		} else {
+			$data['child_lv3_id'] = 0;
+		}
+// <<<CategoriesMenu3rdLevel
+            ]]></add>
+        </operation>
+		<operation>
+            <search><![CDATA[foreach($children as $child) {]]></search>
+            <add position="after"><![CDATA[
+
+// CategoriesMenu3rdLevel>>>
+					$children_lv3_data = array();
+					
+					if ($child['category_id'] == $data['child_id']) {
+						$children_lv3 = $this->model_catalog_category->getCategories($child['category_id']);
+					
+						foreach ($children_lv3 as $child_lv3) {
+							$filter_data_lv3 = array(
+								'filter_category_id'  => $child_lv3['category_id'],
+								'filter_sub_category' => true
+							);
+						
+							$children_lv3_data[] = array(
+								'category_id' => $child_lv3['category_id'],
+								'name'  => $child_lv3['name'] . ($this->config->get('config_product_count') ? ' (' . $this->model_catalog_product->getTotalProducts($filter_data_lv3) . ')' : ''),
+								'href'  => $this->url->link('product/category', 'path=' . $category['category_id'] . '_' . $child['category_id'] . '_' . $child_lv3['category_id'])
+							);
+						}
+					
+					}
+// <<<CategoriesMenu3rdLevel
+            ]]></add>
+        </operation>
+		<operation>
+            <search><![CDATA['name' => $child['name'] . ($this->config->get('config_product_count') ? ' (' . $this->model_catalog_product->getTotalProducts($filter_data) . ')' : ''),]]></search>
+            <add position="after"><![CDATA[
+
+// CategoriesMenu3rdLevel>>>
+						'children_lv3' => $children_lv3_data,
+// <<<CategoriesMenu3rdLevel
+            ]]></add>
+        </operation>
+    </file>
+
+<!-- tpl file -->
+	<file path="catalog/view/theme/default/template/extension/module/category.twig">
+		<operation>
+      		<search><![CDATA[<a href="{{ child.href }}" class="list-group-item active">&nbsp;&nbsp;&nbsp;- {{ child.name }}</a>]]></search>
+      		<add position="after"><![CDATA[
+						{% if child.children_lv3 %}
+  {% for child_lv3 in child.children_lv3 %}
+						{% if child_lv3.category_id == child_lv3_id %}
+                        	<a href="{{ child_lv3.href }}" class="list-group-item active">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#8600; {{ child_lv3.name }}</a>
+                        {% else %}
+                       	 <a href="{{ child_lv3.href }}" class="list-group-item">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#8600; {{ child_lv3.name }} </a>
+                       {% endif %}
+  					{% endfor %}
+  {% endif %}
+      ]]></add>
+    	</operation>
+    </file>
+    <file path="catalog/view/theme/default/template/extension/module/category_small.twig">
+		<operation>
+      		<search><![CDATA[<a href="{{ child.href }}" class="list-group-item active">&nbsp;&nbsp;&nbsp;- {{ child.name }}</a>]]></search>
+      		<add position="after"><![CDATA[
+						{% if child.children_lv3 %}
+  {% for child_lv3 in child.children_lv3 %}
+						{% if child_lv3.category_id == child_lv3_id %}
+                        	<a href="{{ child_lv3.href }}" class="list-group-item active">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#8600; {{ child_lv3.name }}</a>
+                        {% else %}
+                       	 <a href="{{ child_lv3.href }}" class="list-group-item">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#8600; {{ child_lv3.name }} </a>
+                       {% endif %}
+  					{% endfor %}
+  {% endif %}
+      ]]></add>
+    	</operation>
+    </file>
+</modification>
